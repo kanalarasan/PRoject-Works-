@@ -1,0 +1,30 @@
+[root@gcxi gcxi]# cat describe_logs_of_not_running_pods.sh
+#!/bin/bash
+kb8_pods()
+{
+kubectl get pods -A -o wide
+#kubectl get pods -A -o wide | egrep -v 'Completed|Running|NAMESPACE' | awk '{print$2}' | while
+kubectl get pods -A -o wide | egrep -v 'Running|NAME' | awk '{print$2}' | while
+read line
+do
+echo "######################################"
+echo "Describing not running pod '$line'"
+kubectl describe pods $line
+echo "######################################"
+echo "Logs of not running pod '$line'"
+kubectl logs $line
+done
+}
+kb8_nodes()
+{
+kubectl get nodes -A -o wide
+kubectl get nodes -A -o wide | egrep -v 'Ready|ROLES' | awk '{print$1}' | while
+read line
+do
+echo "Describing the not running nodes '$line'"
+kubectl describe $line
+done
+}
+kb8_pods
+kb8_nodes
+
