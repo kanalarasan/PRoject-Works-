@@ -1,8 +1,6 @@
 
-
-
 #set -x
-
+#set -v
 #!/bin/bash
 clear
 function main {
@@ -27,34 +25,8 @@ function main {
       break
     done
 }
-
-Prerequisites-chk ()
-{
-echo "Checking pre-reusities"
-##########################################################################################
-### Check for /var/lib/docker & RAM                                                     ##
-##########################################################################################
-echo "##########################################################################################"
 RAM_MEMORY=$(free -g | grep Mem: | awk '{print $2}' )
-if [ $RAM_MEMORY -lt 15 ]; then
-    echo "Insufficient memory"
-       else
-        echo "Recommended memory is 16-64 GB | your memory is $RAM_MEMORY"
-fi
-
 VAR_LIB_DOCKER=$(du -sh /var/lib/docker/ | cut -f1 | tr --delete G)
-#VAR_LIB_DOCKER=`df -h /var/lib/docker|grep -v ^File|tr '\n' '  '|awk '{if (NF==7) {print $5} else {print $4}}' | tr -d G`
-if [ $VAR_LIB_DOCKER -le 40 ];
-then
-echo "Low disk space $VAR_LIB_DOCKER GB available in /var/lib/docker"
-else
-echo "disk check passed - $VAR_LIB_DOCKER GB available in /var/lib/docker"
-fi
-echo "~~suggested kernel.sem = 250 1024000 250 4096   vm.max_map_count = 5242880"
-echo "your system `cat /etc/sysctl.conf | grep -i -e "kernel.sem" -e "vm.max_map_count"` " | paste - - -
-echo "##########################################################################################"
-main
-}
 
 
 Docker-Compose ()
@@ -65,15 +37,12 @@ echo "Checking pre-reusities"
 ### Check for /var/lib/docker & RAM                                                     ##
 ##########################################################################################
 echo "##########################################################################################"
-RAM_MEMORY=$(free -g | grep Mem: | awk '{print $2}' )
 if [ $RAM_MEMORY -lt 15 ]; then
     echo "Insufficient memory"
        else
         echo "Recommended memory is 16-64 GB | your memory is $RAM_MEMORY"
 fi
 
-VAR_LIB_DOCKER=$(du -sh /var/lib/docker/ | cut -f1 | tr --delete G)
-#VAR_LIB_DOCKER=`df -h /var/lib/docker|grep -v ^File|tr '\n' '  '|awk '{if (NF==7) {print $5} else {print $4}}' | tr -d G`
 if [ $VAR_LIB_DOCKER -le 40 ];
 then
 echo "Low disk space $VAR_LIB_DOCKER GB available in /var/lib/docker"
@@ -82,8 +51,8 @@ echo "disk check passed - $VAR_LIB_DOCKER GB available in /var/lib/docker"
 fi
 echo "~~suggested kernel.sem = 250 1024000 250 4096   vm.max_map_count = 5242880"
 echo "your system `cat /etc/sysctl.conf | grep -i -e "kernel.sem" -e "vm.max_map_count"` " | paste - - -
+echo "`docker --version`"
 echo "##########################################################################################"
-
 
 main
 }
@@ -103,8 +72,6 @@ if [ $RAM_MEMORY -lt 15 ]; then
         echo "Recommended memory is 16-64 GB | your memory is $RAM_MEMORY"
 fi
 
-VAR_LIB_DOCKER=$(du -sh /var/lib/docker/ | cut -f1 | tr --delete G)
-#VAR_LIB_DOCKER=`df -h /var/lib/docker|grep -v ^File|tr '\n' '  '|awk '{if (NF==7) {print $5} else {print $4}}' | tr -d G`
 if [ $VAR_LIB_DOCKER -le 40 ];
 then
 echo "Low disk space $VAR_LIB_DOCKER GB available in /var/lib/docker"
@@ -113,7 +80,38 @@ echo "disk check passed - $VAR_LIB_DOCKER GB available in /var/lib/docker"
 fi
 echo "~~suggested kernel.sem = 250 1024000 250 4096   vm.max_map_count = 5242880"
 echo "your system `cat /etc/sysctl.conf | grep -i -e "kernel.sem" -e "vm.max_map_count"` " | paste - - -
+echo "`docker --version`"
+echo "`kubectl version`"
 echo "##########################################################################################"
+kb8_pods()
+{
+kubectl get pods -A -o wide
+#kubectl get pods -A -o wide | egrep -v 'Completed|Running|NAMESPACE' | awk '{print$2}' | while
+kubectl get pods -A -o wide | egrep -v 'Running|NAME' | awk '{print$2}' | while
+read line
+do
+echo "######################################"
+echo "Describing not running pod '$line'"
+kubectl describe pods $line
+echo "######################################"
+echo "Logs of not running pod '$line'"
+kubectl logs $line
+done
+}
+kb8_nodes()
+{
+kubectl get nodes -A -o wide
+kubectl get nodes -A -o wide | egrep -v 'Ready|ROLES' | awk '{print$1}' | while
+read line
+do
+echo "Describing the not running nodes '$line'"
+kubectl describe $line
+done
+}
+kb8_pods
+kb8_nodes
+
+
 main
 }
 
@@ -124,15 +122,12 @@ echo "Checking pre-reusities"
 ### Check for /var/lib/docker & RAM                                                     ##
 ##########################################################################################
 echo "##########################################################################################"
-RAM_MEMORY=$(free -g | grep Mem: | awk '{print $2}' )
 if [ $RAM_MEMORY -lt 15 ]; then
     echo "Insufficient memory"
        else
         echo "Recommended memory is 16-64 GB | your memory is $RAM_MEMORY"
 fi
 
-VAR_LIB_DOCKER=$(du -sh /var/lib/docker/ | cut -f1 | tr --delete G)
-#VAR_LIB_DOCKER=`df -h /var/lib/docker|grep -v ^File|tr '\n' '  '|awk '{if (NF==7) {print $5} else {print $4}}' | tr -d G`
 if [ $VAR_LIB_DOCKER -le 40 ];
 then
 echo "Low disk space $VAR_LIB_DOCKER GB available in /var/lib/docker"
@@ -153,15 +148,12 @@ echo "Checking pre-reusities"
 ### Check for /var/lib/docker & RAM                                                     ##
 ##########################################################################################
 echo "##########################################################################################"
-RAM_MEMORY=$(free -g | grep Mem: | awk '{print $2}' )
 if [ $RAM_MEMORY -lt 15 ]; then
     echo "Insufficient memory"
        else
         echo "Recommended memory is 16-64 GB | your memory is $RAM_MEMORY"
 fi
 
-VAR_LIB_DOCKER=$(du -sh /var/lib/docker/ | cut -f1 | tr --delete G)
-#VAR_LIB_DOCKER=`df -h /var/lib/docker|grep -v ^File|tr '\n' '  '|awk '{if (NF==7) {print $5} else {print $4}}' | tr -d G`
 if [ $VAR_LIB_DOCKER -le 40 ];
 then
 echo "Low disk space $VAR_LIB_DOCKER GB available in /var/lib/docker"
@@ -182,3 +174,4 @@ main
 while test $? -eq 0; do
   $SELECT
 done
+
