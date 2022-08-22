@@ -1,0 +1,15 @@
+How to change the web.xml value in container 
+
+Kindly refer the attached sample "updated gcxi.yaml" file which we tested successfully in our lab.
+ 
+Sample values:
+--------------------------
+containers:
+   - name: gcxi
+    command: ["/bin/sh", "-c"]
+    args:
+     - |
+      sed -i 's|<session-timeout>30</session-timeout>|<session-timeout>240</session-timeout>|g' /opt/apache-tomcat-9.0.62/webapps/MicroStrategy/WEB-INF/web.xml;
+      /genesys/gcxi/mstr_start.sh;
+    image: pureengageuse1-docker-multicloud-local.jfrog.io/gcxi/gcxi:100.0.028.0000
+
