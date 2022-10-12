@@ -1,0 +1,43 @@
+
+
+
+echo "Checking pre-reusities of Kb8 with descriptor"
+echo "##########################################################################################"
+echo "### To check RAM and Swap ###"
+sudo free -g
+
+echo "### To check kernel.sem & vm.max_map_count###"
+sudo cat /etc/sysctl.conf | grep -i -e "kernel.sem" -e "vm.max_map_count"
+
+echo "### To check docker version###"
+sudo docker --version
+
+echo "### To check Kubelet and Kubectl versions###"
+sudo kubelet --version && kubeadm version
+sudo rpm -qa | grep -i "kube*"
+
+echo "### To check Kb8 Certificate Status"
+sudo openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text |grep ' Not '
+
+echo "### To check service status of :"
+sudo systemctl status docker --no-pager
+sudo systemctl status kubelet --no-pager
+sudo systemctl status containerd --no-pager
+
+echo "##########################################################################################"
+kubectl get pods -A -o wide
+kubectl get pods -A -o wide | egrep -v 'Completed|Running|NAME' | awk '{print$2}' | while
+read line
+do
+echo "######################################"
+echo "'$line' -> pod status = Not Running"
+echo "Describe and check the logs of '$line' pod"
+done
+
+kubectl get nodes -A -o wide
+kubectl get nodes -A -o wide | egrep -v 'Ready|ROLES' | awk '{print$1}' | while
+read line
+do
+echo "'$line' -> node status = Not Ready"
+echo "Describe and check the issue with '$line' node"
+done
